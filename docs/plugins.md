@@ -20,6 +20,6 @@ Os plugins Zsh ficam em `dot_zsh_plugins.txt`. O Antidote regenera o bundle auto
 
 - `fzf`: busca interativa de arquivos e diretórios.
 - `zoxide`: navegação inteligente com `z`.
-- `eza`: `ls`, `ll` e `tree` modernos.
+- `eza`: `ls`, `ll` e `tree` modernos. Ícones ficam desativados por padrão para funcionar bem em qualquer fonte.
 - `bat`: visualização de arquivos com syntax highlighting.
 - `atuin`: histórico local avançado com `Ctrl-R`; sincronização é opt-in.
