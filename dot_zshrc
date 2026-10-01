@@ -1,0 +1,93 @@
+# Powerlevel10k instant prompt deve permanecer próximo do início.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# Configurações específicas desta máquina e segredos nunca entram no Git.
+[[ -r "$HOME/.config/zsh/local.zsh" ]] && source "$HOME/.config/zsh/local.zsh"
+[[ -r "$HOME/.zsh_secrets" ]] && source "$HOME/.zsh_secrets"
+
+# Histórico compartilhado entre terminais.
+HISTFILE="${ZDOTDIR:-$HOME}/.zsh_history"
+HISTSIZE=100000
+SAVEHIST=100000
+setopt append_history extended_history hist_expire_dups_first hist_ignore_dups
+setopt hist_ignore_space hist_reduce_blanks inc_append_history share_history
+
+# Prefixo do Homebrew sem executar processos a cada novo terminal.
+if [[ -n "${HOMEBREW_PREFIX:-}" ]]; then
+  _brew_prefix="$HOMEBREW_PREFIX"
+elif [[ -d /opt/homebrew ]]; then
+  _brew_prefix=/opt/homebrew
+else
+  _brew_prefix=/usr/local
+fi
+
+# Antidote gera um bundle estático e só o regenera quando a lista muda.
+if [[ -d "$_brew_prefix/opt/antidote" ]]; then
+  _antidote_prefix="$_brew_prefix/opt/antidote"
+  _antidote_script="${_antidote_prefix}/share/antidote/antidote.zsh"
+  _plugins="${ZDOTDIR:-$HOME}/.zsh_plugins"
+
+  if [[ -r "$_antidote_script" ]]; then
+    if [[ ! "${_plugins}.zsh" -nt "${_plugins}.txt" ]]; then
+      source "$_antidote_script"
+      zstyle ':antidote:bundle:*' zcompile 'yes'
+      antidote bundle < "${_plugins}.txt" >| "${_plugins}.zsh"
+    fi
+  fi
+  unset _antidote_prefix _antidote_script _plugins
+fi
+
+# Completions: atualização completa no máximo uma vez por dia.
+[[ -d "$HOME/.docker/completions" ]] && fpath=("$HOME/.docker/completions" $fpath)
+_antidote_cache="${XDG_CACHE_HOME:-$HOME/Library/Caches}/antidote"
+[[ -d "$_antidote_cache/github.com/zsh-users/zsh-completions/src" ]] && \
+  fpath=("$_antidote_cache/github.com/zsh-users/zsh-completions/src" $fpath)
+unset _antidote_cache
+autoload -Uz compinit
+_zcompdump="${ZDOTDIR:-$HOME}/.zcompdump"
+if [[ -n "${_zcompdump}"(#qNmh+24) ]]; then
+  compinit -d "$_zcompdump"
+else
+  compinit -C -d "$_zcompdump"
+fi
+unset _zcompdump
+
+# Plugins que chamam compdef são carregados somente depois do compinit.
+[[ -r "${ZDOTDIR:-$HOME}/.zsh_plugins.zsh" ]] && source "${ZDOTDIR:-$HOME}/.zsh_plugins.zsh"
+
+# Atalhos do history-substring-search.
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+
+# Prompt.
+if [[ -d "$_brew_prefix/opt/powerlevel10k" ]]; then
+  _p10k_prefix="$_brew_prefix/opt/powerlevel10k"
+  [[ -r "${_p10k_prefix}/share/powerlevel10k/powerlevel10k.zsh-theme" ]] && \
+    source "${_p10k_prefix}/share/powerlevel10k/powerlevel10k.zsh-theme"
+  unset _p10k_prefix
+fi
+[[ -r "$HOME/.p10k.zsh" ]] && source "$HOME/.p10k.zsh"
+unset _brew_prefix
+
+source "$HOME/.config/zsh/tools.zsh"
+source "$HOME/.config/zsh/aliases.zsh"
+
+# NVM sob demanda. A versão default entra no PATH sem carregar nvm.sh.
+export NVM_DIR="$HOME/.nvm"
+if [[ -r "$NVM_DIR/alias/default" ]]; then
+  _nvm_default=$(<"$NVM_DIR/alias/default")
+  _nvm_bin=("$NVM_DIR"/versions/node/v${_nvm_default}*/bin(Nn))
+  (( ${#_nvm_bin} )) && path=("${_nvm_bin[-1]}" $path)
+  unset _nvm_default _nvm_bin
+fi
+nvm() {
+  unset -f nvm
+  [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+  [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
+  nvm "$@"
+}
+
+typeset -U path PATH
+export PATH

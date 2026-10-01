@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+runs="${1:-10}"
+tmp_file="$(mktemp)"
+trap 'rm -f "$tmp_file"' EXIT
+
+for ((i = 1; i <= runs; i++)); do
+  /usr/bin/time -p zsh -i -c exit 2>&1 | awk '/^real / { print $2 }' >> "$tmp_file"
+done
+
+awk '
+  { total += $1; values[NR] = $1 }
+  END {
+    printf "execuções: %d\n", NR
+    printf "média:     %.3fs\n", total / NR
+    printf "primeira:  %.3fs\n", values[1]
+    for (i = 2; i <= NR; i++) if (values[i] < min || min == 0) min = values[i]
+    printf "melhor:    %.3fs\n", min
+  }
+' "$tmp_file"

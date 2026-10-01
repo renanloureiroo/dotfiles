@@ -1,0 +1,5 @@
+.DS_Store
+*.zwc
+.zsh_plugins.zsh
+.zsh_plugins.zsh.zwc
+

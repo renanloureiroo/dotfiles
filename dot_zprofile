@@ -1,0 +1,16 @@
+# Homebrew em Macs Apple Silicon e Intel.
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+[[ -d "$HOME/.docker/bin" ]] && path+=("$HOME/.docker/bin")
+[[ -d "/Applications/Obsidian.app/Contents/MacOS" ]] && path+=("/Applications/Obsidian.app/Contents/MacOS")
+
+# rbenv só precisa inicializar no shell de login; shells filhos herdam o ambiente.
+command -v rbenv >/dev/null 2>&1 && eval "$(rbenv init - --no-rehash zsh)"
+
+typeset -U path PATH
+export PATH
+

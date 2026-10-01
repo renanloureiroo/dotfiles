@@ -1,0 +1,17 @@
+# Bibliotecas e plugins selecionados do Oh My Zsh, sem carregar o framework inteiro.
+ohmyzsh/ohmyzsh path:lib/functions.zsh
+ohmyzsh/ohmyzsh path:lib/git.zsh
+ohmyzsh/ohmyzsh path:lib/clipboard.zsh
+ohmyzsh/ohmyzsh path:lib/directories.zsh
+ohmyzsh/ohmyzsh path:plugins/git
+ohmyzsh/ohmyzsh path:plugins/extract
+ohmyzsh/ohmyzsh path:plugins/web-search
+ohmyzsh/ohmyzsh path:plugins/colored-man-pages
+
+# Completions precisam entrar no fpath antes do compinit.
+zsh-users/zsh-completions kind:fpath path:src
+
+# Experiência interativa. O syntax-highlighting deve permanecer por último.
+zsh-users/zsh-autosuggestions
+zsh-users/zsh-history-substring-search
+zsh-users/zsh-syntax-highlighting

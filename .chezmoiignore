@@ -1,0 +1,7 @@
+README.md
+Brewfile
+bootstrap.sh
+docs/**
+scripts/**
+.gitignore
+
