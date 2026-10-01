@@ -1,0 +1,5 @@
+# Este arquivo roda em todo processo Zsh. Mantenha-o pequeno e sem comandos externos.
+typeset -U path PATH
+path=("$HOME/.local/bin" "$HOME/go/bin" $path)
+export PATH
+

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -u
+
+status=0
+for command_name in zsh brew chezmoi fzf zoxide eza bat fd atuin; do
+  if command -v "$command_name" >/dev/null 2>&1; then
+    printf 'OK   %s\n' "$command_name"
+  else
+    printf 'ERRO %s não encontrado\n' "$command_name"
+    status=1
+  fi
+done
+
+if [[ -r "$(brew --prefix antidote 2>/dev/null)/share/antidote/antidote.zsh" ]]; then
+  echo 'OK   antidote'
+else
+  echo 'ERRO antidote não encontrado'
+  status=1
+fi
+
+if git grep -En '(TOKEN|PASSWORD|SECRET|PRIVATE_KEY)=' -- ':!private_dot_zsh_secrets.example'; then
+  echo 'ERRO possível segredo versionado'
+  status=1
+else
+  echo 'OK   nenhum segredo óbvio versionado'
+fi
+
+exit "$status"
