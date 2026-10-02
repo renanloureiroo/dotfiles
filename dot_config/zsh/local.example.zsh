@@ -7,3 +7,6 @@
 # export M2_HOME="$HOME/apache-maven-3.9.5"
 # path=("$M2_HOME/bin" $path)
 
+
+# Atalhos pessoais ficam aqui, fora do repositório público.
+# alias meu-atalho='comando --flags'
