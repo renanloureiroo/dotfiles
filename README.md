@@ -22,6 +22,8 @@ gh repo clone renanloureiroo/dotfiles ~/.local/share/chezmoi
 ~/.local/share/chezmoi/bootstrap.sh
 ```
 
+Em seguida, configure a fonte **MesloLGS Nerd Font** no seu terminal para que os ícones do prompt apareçam corretamente. Veja [fonte do terminal](docs/terminal-font.md).
+
 ## Uso diário
 
 Edite os arquivos no diretório do projeto e aplique:
@@ -45,4 +47,4 @@ antidote update
 - Use `~/.zsh_secrets` com permissão `600` para tokens.
 - Nunca copie tokens para arquivos gerenciados pelo Chezmoi.
 
-Consulte [instalação](docs/installation.md), [plugins](docs/plugins.md) e [solução de problemas](docs/troubleshooting.md).
+Consulte [instalação](docs/installation.md), [fonte do terminal](docs/terminal-font.md), [plugins](docs/plugins.md) e [solução de problemas](docs/troubleshooting.md).

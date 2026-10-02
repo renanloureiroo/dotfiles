@@ -15,6 +15,10 @@ rm -f ~/.zcompdump*
 exec zsh
 ```
 
+## Ícones quebrados no prompt
+
+Quadrados ou `?` no prompt e no `eza` indicam que o terminal não está usando a Nerd Font. Veja [Fonte do terminal](terminal-font.md).
+
 ## Diagnóstico
 
 ```bash

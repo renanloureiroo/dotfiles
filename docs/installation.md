@@ -11,7 +11,9 @@ O bootstrap instala Homebrew quando necessário, aplica o `Brewfile`, salva os d
 
 ## Fonte do terminal
 
-O `Brewfile` instala **MesloLGS Nerd Font**, necessária para os símbolos do Powerlevel10k. Selecione `MesloLGS NF` nas preferências do Terminal, iTerm2, Warp ou outro emulador utilizado. A seleção da fonte é específica de cada aplicativo.
+O `Brewfile` instala **MesloLGS Nerd Font**, necessária para os símbolos do Powerlevel10k e os ícones do `eza`. Depois do bootstrap, selecione `MesloLGS Nerd Font` nas preferências de cada terminal utilizado; essa escolha não é feita automaticamente.
+
+Consulte o [passo a passo por terminal](terminal-font.md) para Terminal.app, iTerm2, Warp, Ghostty e VS Code.
 
 ## Dados específicos da máquina
 
