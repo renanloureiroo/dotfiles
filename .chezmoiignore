@@ -1,7 +1,8 @@
 README.md
 Brewfile
 bootstrap.sh
+assets/**
 docs/**
 scripts/**
 .gitignore
-
+LICENSE

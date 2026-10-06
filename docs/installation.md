@@ -1,9 +1,9 @@
 # Instalação
 
-## Mac já autenticado no GitHub
+## Mac novo
 
 ```bash
-gh repo clone renanloureiroo/dotfiles ~/.local/share/chezmoi
+git clone https://github.com/renanloureiroo/dotfiles.git ~/.local/share/chezmoi
 ~/.local/share/chezmoi/bootstrap.sh
 ```
 
