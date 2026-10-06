@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="t d">
+  <title id="t">dotfiles</title>
+  <desc id="d">Um Zsh rápido, bonito e reproduzível para macOS.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d0f17"/>
+      <stop offset="1" stop-color="#1b1430"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.35" r="0.55">
+      <stop offset="0" stop-color="#bb9af7" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#bb9af7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.1" cy="1" r="0.5">
+      <stop offset="0" stop-color="#7aa2f7" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#7aa2f7" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+    </pattern>
+    <clipPath id="frame"><rect width="1280" height="400" rx="24"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <rect width="1280" height="400" fill="url(#bg)"/>
+    <rect width="1280" height="400" fill="url(#grid)"/>
+    <rect width="1280" height="400" fill="url(#glow)"/>
+    <rect width="1280" height="400" fill="url(#glow2)"/>
+  </g>
+
+  <!-- Texto -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="80" y="112" font-size="20" fill="#565f89">~/.local/share/chezmoi</text>
+  </g>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif">
+    <text x="76" y="196" font-size="88" font-weight="800" fill="#e6e9f5" letter-spacing="-2">
+      <tspan fill="#bb9af7">❯</tspan> dotfiles
+    </text>
+    <text x="80" y="246" font-size="26" fill="#a9b1d6">Um Zsh rápido, bonito e reproduzível para macOS.</text>
+    <text x="80" y="280" font-size="20" fill="#565f89">Um comando para instalar. Zero segredos no Git.</text>
+  </g>
+
+  <!-- Chips -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">
+    <rect x="80" y="314" width="150" height="34" rx="17" fill="#bb9af7" fill-opacity="0.14" stroke="#bb9af7" stroke-opacity="0.45"/>
+    <text x="155" y="336" text-anchor="middle" fill="#d6c4fb">powerlevel10k</text>
+    <rect x="242" y="314" width="110" height="34" rx="17" fill="#7aa2f7" fill-opacity="0.14" stroke="#7aa2f7" stroke-opacity="0.45"/>
+    <text x="297" y="336" text-anchor="middle" fill="#b9cdfb">antidote</text>
+    <rect x="364" y="314" width="104" height="34" rx="17" fill="#9ece6a" fill-opacity="0.14" stroke="#9ece6a" stroke-opacity="0.45"/>
+    <text x="416" y="336" text-anchor="middle" fill="#c9e4a8">chezmoi</text>
+    <rect x="480" y="314" width="212" height="34" rx="17" fill="#e0af68" fill-opacity="0.14" stroke="#e0af68" stroke-opacity="0.45"/>
+    <text x="586" y="336" text-anchor="middle" fill="#efd2a6">fzf · zoxide · atuin</text>
+  </g>
+
+  <!-- Mini terminal -->
+  <g transform="translate(800 70)">
+    <rect width="400" height="260" rx="14" fill="#1a1b26" stroke="#ffffff" stroke-opacity="0.08"/>
+    <rect width="400" height="36" rx="14" fill="#16161e"/>
+    <rect y="22" width="400" height="14" fill="#16161e"/>
+    <circle cx="22" cy="18" r="6" fill="#ff5f57"/>
+    <circle cx="42" cy="18" r="6" fill="#febc2e"/>
+    <circle cx="62" cy="18" r="6" fill="#28c840"/>
+    <rect x="93" y="218" width="2" height="19" fill="#c0caf5"/>
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" xml:space="preserve">
+      <text x="22" y="74"><tspan fill="#7aa2f7">~/projetos/app</tspan> <tspan fill="#565f89">main</tspan></text>
+      <text x="378" y="74" text-anchor="end" fill="#565f89">09:41:07</text>
+      <text x="22" y="100"><tspan fill="#bb9af7">❯</tspan> <tspan fill="#9ece6a">z</tspan> <tspan fill="#c0caf5">dotf</tspan></text>
+      <text x="22" y="140"><tspan fill="#7aa2f7">~/.local/share/chezmoi</tspan> <tspan fill="#565f89">main</tspan></text>
+      <text x="378" y="140" text-anchor="end" fill="#565f89">09:41:09</text>
+      <text x="22" y="166"><tspan fill="#bb9af7">❯</tspan> <tspan fill="#9ece6a">chezmoi</tspan> <tspan fill="#c0caf5">apply</tspan></text>
+      <text x="22" y="206"><tspan fill="#7aa2f7">~/.local/share/chezmoi</tspan> <tspan fill="#565f89">main</tspan></text>
+      <text x="22" y="232"><tspan fill="#bb9af7">❯</tspan> <tspan fill="#9ece6a">git</tspan> <tspan fill="#c0caf5">st</tspan><tspan fill="#565f89">atus -sb</tspan></text>
+    </g>
+  </g>
+</svg>
