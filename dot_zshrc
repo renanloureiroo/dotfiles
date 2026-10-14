@@ -23,14 +23,16 @@ else
   _brew_prefix=/usr/local
 fi
 
-# Antidote gera um bundle estático e só o regenera quando a lista muda.
+# Antidote gera um bundle estático e só o regenera quando a lista muda
+# ou quando o cache com os plugins clonados some (ex.: limpeza de ~/Library/Caches).
+_antidote_cache="${ANTIDOTE_HOME:-${XDG_CACHE_HOME:-$HOME/Library/Caches}/antidote}"
 if [[ -d "$_brew_prefix/opt/antidote" ]]; then
   _antidote_prefix="$_brew_prefix/opt/antidote"
   _antidote_script="${_antidote_prefix}/share/antidote/antidote.zsh"
   _plugins="${ZDOTDIR:-$HOME}/.zsh_plugins"
 
   if [[ -r "$_antidote_script" ]]; then
-    if [[ ! "${_plugins}.zsh" -nt "${_plugins}.txt" ]]; then
+    if [[ ! "${_plugins}.zsh" -nt "${_plugins}.txt" || ! -d "$_antidote_cache" ]]; then
       source "$_antidote_script"
       zstyle ':antidote:bundle:*' zcompile 'yes'
       antidote bundle < "${_plugins}.txt" >| "${_plugins}.zsh"
@@ -41,7 +43,6 @@ fi
 
 # Completions: atualização completa no máximo uma vez por dia.
 [[ -d "$HOME/.docker/completions" ]] && fpath=("$HOME/.docker/completions" $fpath)
-_antidote_cache="${XDG_CACHE_HOME:-$HOME/Library/Caches}/antidote"
 [[ -d "$_antidote_cache/github.com/zsh-users/zsh-completions/src" ]] && \
   fpath=("$_antidote_cache/github.com/zsh-users/zsh-completions/src" $fpath)
 unset _antidote_cache
