@@ -27,6 +27,20 @@ rm -f ~/.zcompdump*
 exec zsh
 ```
 
+## Android Studio não acha `node`, Java ou o SDK
+
+Apps gráficas (Android Studio, VS Code, Xcode) não leem o `~/.zshrc`, então não
+enxergam o Node do nvm nem o `JAVA_HOME`. O erro típico é
+`Cannot run program "node" ... error=2` ao sincronizar o Gradle. O assistente
+resolve para o terminal e para as apps gráficas de uma vez:
+
+```bash
+~/.local/share/chezmoi/scripts/dev-env          # pergunta Node, Java e Android SDK
+~/.local/share/chezmoi/scripts/dev-env --check  # mostra o que cada lado enxerga
+```
+
+Depois feche o Android Studio (Cmd+Q), abra de novo e sincronize o Gradle.
+
 ## Diagnóstico
 
 ```bash

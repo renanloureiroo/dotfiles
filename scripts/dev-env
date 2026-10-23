@@ -1,0 +1,274 @@
+#!/usr/bin/env bash
+# Configura Node, Java e Android SDK para o terminal e para apps gráficas
+# (Android Studio, VS Code, Xcode...), que não leem o ~/.zshrc.
+#
+#   scripts/dev-env           assistente interativo
+#   scripts/dev-env --check   mostra o que o terminal e as apps gráficas enxergam
+set -euo pipefail
+
+ENV_FILE="$HOME/.config/zsh/dev-env.zsh"
+AGENT_LABEL="local.dotfiles.dev-env"
+AGENT_FILE="$HOME/Library/LaunchAgents/$AGENT_LABEL.plist"
+
+say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
+ok() { printf '  \033[32mOK\033[0m   %s\n' "$*"; }
+warn() { printf '  \033[33mFALTA\033[0m %s\n' "$*"; }
+
+# ask_choice <resultado> <título> <padrão> <opções...>
+# Mostra um menu numerado; Enter aceita o padrão. A última opção é sempre "pular".
+ask_choice() {
+  local __var="$1" title="$2" default="$3"
+  shift 3
+  local options=("$@") i answer
+  say "$title"
+  for i in "${!options[@]}"; do
+    printf '  %d) %s\n' "$((i + 1))" "${options[$i]}"
+  done
+  printf '  0) Pular\n'
+  while true; do
+    read -r -p "Escolha [${default}]: " answer
+    answer="${answer:-$default}"
+    if [[ "$answer" == "0" ]]; then
+      printf -v "$__var" '%s' ""
+      return
+    fi
+    if [[ "$answer" =~ ^[0-9]+$ ]] && ((answer >= 1 && answer <= ${#options[@]})); then
+      printf -v "$__var" '%s' "${options[$((answer - 1))]}"
+      return
+    fi
+    echo "  Opção inválida."
+  done
+}
+
+ask_yes_no() {
+  local answer
+  read -r -p "$1 [S/n]: " answer
+  [[ -z "$answer" || "$answer" =~ ^[sSyY] ]]
+}
+
+ask_path() {
+  local __var="$1" prompt="$2" answer
+  while true; do
+    read -r -e -p "$prompt" answer
+    answer="${answer/#\~/$HOME}"
+    if [[ -d "$answer" ]]; then
+      printf -v "$__var" '%s' "$answer"
+      return
+    fi
+    echo "  Diretório não encontrado."
+  done
+}
+
+gui_env() { launchctl getenv "$1" 2>/dev/null || true; }
+
+check() {
+  say "Terminal"
+  command -v node >/dev/null 2>&1 && ok "node $(node -v) ($(command -v node))" || warn "node"
+  [[ -n "${JAVA_HOME:-}" ]] && ok "JAVA_HOME=$JAVA_HOME" || warn "JAVA_HOME"
+  [[ -n "${ANDROID_HOME:-}" ]] && ok "ANDROID_HOME=$ANDROID_HOME" || warn "ANDROID_HOME"
+
+  say "Apps gráficas (Android Studio, VS Code...)"
+  local gui_path
+  gui_path="$(gui_env PATH)"
+  if [[ -n "$gui_path" ]] && env -i PATH="$gui_path" sh -c 'command -v node' >/dev/null 2>&1; then
+    ok "node enxergado: $(env -i PATH="$gui_path" sh -c 'command -v node')"
+  else
+    warn "node não está no PATH das apps gráficas"
+  fi
+  [[ -n "$(gui_env JAVA_HOME)" ]] && ok "JAVA_HOME=$(gui_env JAVA_HOME)" || warn "JAVA_HOME"
+  [[ -n "$(gui_env ANDROID_HOME)" ]] && ok "ANDROID_HOME=$(gui_env ANDROID_HOME)" || warn "ANDROID_HOME"
+  echo
+  echo "Dica: apps já abertas só enxergam mudanças depois de fechadas (Cmd+Q) e abertas de novo."
+}
+
+if [[ "${1:-}" == "--check" ]]; then
+  check
+  exit 0
+fi
+
+[[ "$(uname)" == "Darwin" ]] || { echo "Este script é só para macOS."; exit 1; }
+
+echo "Vamos configurar Node, Java e Android SDK para o terminal e para o Android Studio."
+
+# ---------------------------------------------------------------- Node
+node_dirs=()
+if [[ -d "$HOME/.nvm/versions/node" ]]; then
+  for dir in "$HOME"/.nvm/versions/node/v*/bin; do
+    [[ -x "$dir/node" ]] && node_dirs+=("$dir")
+  done
+fi
+for dir in /opt/homebrew/bin /usr/local/bin; do
+  [[ -x "$dir/node" ]] && node_dirs+=("$dir")
+done
+
+node_default=1
+if [[ -r "$HOME/.nvm/alias/default" ]]; then
+  nvm_default="$(<"$HOME/.nvm/alias/default")"
+  for i in "${!node_dirs[@]}"; do
+    if [[ "${node_dirs[$i]}" == *"/v${nvm_default}"* ]]; then
+      node_default=$((i + 1))
+    fi
+  done
+fi
+
+NODE_DIR=""
+if ((${#node_dirs[@]})); then
+  node_labels=()
+  for dir in "${node_dirs[@]}"; do
+    node_labels+=("$dir/node  ($("$dir/node" -v))")
+  done
+  ask_choice node_label "Qual Node usar?" "$node_default" "${node_labels[@]}"
+  [[ -n "$node_label" ]] && NODE_DIR="$(dirname "${node_label%%  (*}")"
+else
+  say "Node"
+  echo "  Nenhum Node encontrado. Instale com: brew install node  (ou nvm install --lts)"
+fi
+
+# ---------------------------------------------------------------- Java
+java_homes=()
+java_labels=()
+while IFS= read -r line; do
+  home="${line##* }"
+  [[ -d "$home" ]] || continue
+  java_homes+=("$home")
+  java_labels+=("$(awk '{print "JDK " $1}' <<<"$line")  $home")
+done < <(/usr/libexec/java_home -V 2>&1 >/dev/null | grep -E '^[[:space:]]+[0-9]' || true)
+
+studio_jbr="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+if [[ -d "$studio_jbr" ]]; then
+  java_homes+=("$studio_jbr")
+  java_labels+=("JBR do Android Studio  $studio_jbr")
+fi
+
+java_default=1
+for i in "${!java_labels[@]}"; do
+  [[ "${java_labels[$i]}" == "JDK 17"* ]] && { java_default=$((i + 1)); break; }
+done
+
+JAVA_HOME_CHOICE=""
+if ((${#java_homes[@]})); then
+  echo
+  echo "Dica: React Native recomenda o JDK 17."
+  ask_choice java_label "Qual Java usar?" "$java_default" "${java_labels[@]}"
+  for i in "${!java_labels[@]}"; do
+    [[ "${java_labels[$i]}" == "$java_label" ]] && JAVA_HOME_CHOICE="${java_homes[$i]}"
+  done
+else
+  say "Java"
+  echo "  Nenhum JDK encontrado."
+  if command -v brew >/dev/null 2>&1 && ask_yes_no "Instalar o JDK 17 (Zulu) com o Homebrew agora?"; then
+    brew install --cask zulu@17
+    JAVA_HOME_CHOICE="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
+  fi
+fi
+
+# ---------------------------------------------------------------- Android SDK
+sdk_candidates=()
+for dir in "${ANDROID_HOME:-}" "$HOME/Library/Android/sdk" "$HOME/Android/Sdk"; do
+  [[ -n "$dir" ]] || continue
+  [[ -d "$dir/platform-tools" || -d "$dir/platforms" ]] && sdk_candidates+=("$dir")
+done
+# Remove duplicados mantendo a ordem.
+sdk_unique=()
+for dir in ${sdk_candidates[@]+"${sdk_candidates[@]}"}; do
+  seen=0
+  for other in ${sdk_unique[@]+"${sdk_unique[@]}"}; do [[ "$other" == "$dir" ]] && seen=1; done
+  ((seen)) || sdk_unique+=("$dir")
+done
+
+ANDROID_SDK=""
+if ((${#sdk_unique[@]})); then
+  ask_choice ANDROID_SDK "Qual Android SDK usar?" 1 "${sdk_unique[@]}"
+else
+  say "Android SDK"
+  echo "  Nenhum SDK encontrado nos caminhos padrão."
+  if ask_yes_no "Informar o caminho manualmente?"; then
+    ask_path ANDROID_SDK "Caminho do SDK: "
+  fi
+fi
+
+if [[ -z "$NODE_DIR" && -z "$JAVA_HOME_CHOICE" && -z "$ANDROID_SDK" ]]; then
+  echo; echo "Nada escolhido, nada alterado."; exit 0
+fi
+
+# ---------------------------------------------------------------- Resumo
+say "Resumo"
+echo "  Node:        ${NODE_DIR:-—}"
+echo "  JAVA_HOME:   ${JAVA_HOME_CHOICE:-—}"
+echo "  ANDROID_HOME: ${ANDROID_SDK:-—}"
+echo
+ask_yes_no "Aplicar?" || { echo "Cancelado."; exit 0; }
+
+# ---------------------------------------------------------------- Terminal (zsh)
+mkdir -p "$(dirname "$ENV_FILE")"
+{
+  echo "# Gerado por scripts/dev-env. Para mudar, rode o script de novo."
+  [[ -n "$JAVA_HOME_CHOICE" ]] && echo "export JAVA_HOME=\"$JAVA_HOME_CHOICE\""
+  if [[ -n "$ANDROID_SDK" ]]; then
+    echo "export ANDROID_HOME=\"$ANDROID_SDK\""
+    echo "export ANDROID_SDK_ROOT=\"\$ANDROID_HOME\""
+  fi
+  echo "_dev_paths=()"
+  [[ -n "$NODE_DIR" ]] && echo "_dev_paths+=(\"$NODE_DIR\")"
+  [[ -n "$JAVA_HOME_CHOICE" ]] && echo "_dev_paths+=(\"\$JAVA_HOME/bin\")"
+  if [[ -n "$ANDROID_SDK" ]]; then
+    echo "_dev_paths+=(\"\$ANDROID_HOME/platform-tools\" \"\$ANDROID_HOME/emulator\" \"\$ANDROID_HOME/cmdline-tools/latest/bin\")"
+  fi
+  echo 'path=($_dev_paths $path)'
+  echo "unset _dev_paths"
+  echo "typeset -U path PATH"
+  echo "export PATH"
+} >"$ENV_FILE"
+ok "Terminal: $ENV_FILE"
+
+# ---------------------------------------------------------------- Apps gráficas (launchd)
+gui_path=""
+for dir in "$NODE_DIR" "${JAVA_HOME_CHOICE:+$JAVA_HOME_CHOICE/bin}" \
+  "${ANDROID_SDK:+$ANDROID_SDK/platform-tools}" "${ANDROID_SDK:+$ANDROID_SDK/emulator}" \
+  /opt/homebrew/bin /usr/local/bin /usr/bin /bin /usr/sbin /sbin; do
+  [[ -n "$dir" ]] && gui_path="${gui_path:+$gui_path:}$dir"
+done
+
+set_cmds="launchctl setenv PATH '$gui_path'"
+[[ -n "$JAVA_HOME_CHOICE" ]] && set_cmds+="; launchctl setenv JAVA_HOME '$JAVA_HOME_CHOICE'"
+if [[ -n "$ANDROID_SDK" ]]; then
+  set_cmds+="; launchctl setenv ANDROID_HOME '$ANDROID_SDK'; launchctl setenv ANDROID_SDK_ROOT '$ANDROID_SDK'"
+fi
+
+mkdir -p "$(dirname "$AGENT_FILE")"
+cat >"$AGENT_FILE" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$AGENT_LABEL</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>-c</string>
+    <string>$set_cmds</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>
+PLIST
+
+launchctl bootout "gui/$(id -u)" "$AGENT_FILE" >/dev/null 2>&1 || true
+launchctl bootstrap "gui/$(id -u)" "$AGENT_FILE" >/dev/null 2>&1 || true
+sh -c "$set_cmds"
+ok "Apps gráficas: $AGENT_FILE (reaplicado a cada login)"
+
+# ---------------------------------------------------------------- Final
+if pgrep -f GradleDaemon >/dev/null 2>&1; then
+  if ask_yes_no "Há daemons do Gradle rodando com o ambiente antigo. Parar agora?"; then
+    pkill -f GradleDaemon || true
+    ok "Daemons do Gradle parados"
+  fi
+fi
+
+check
+echo
+echo "Próximos passos:"
+echo "  1. Feche o Android Studio (Cmd+Q) e abra de novo."
+echo "  2. Abra um novo terminal ou rode: exec zsh"
+echo "  3. File → Sync Project with Gradle Files."

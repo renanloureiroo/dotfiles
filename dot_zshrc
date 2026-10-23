@@ -90,5 +90,8 @@ nvm() {
   nvm "$@"
 }
 
+# Node, Java e Android SDK escolhidos com scripts/dev-env (também valem para o Android Studio).
+[[ -r "$HOME/.config/zsh/dev-env.zsh" ]] && source "$HOME/.config/zsh/dev-env.zsh"
+
 typeset -U path PATH
 export PATH
